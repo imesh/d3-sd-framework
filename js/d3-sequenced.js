@@ -78,15 +78,15 @@ var svg = d3.select("body")
     .classed("svg-content-responsive", true);
 
 // Create toolbar --- //
-var toolbar = svg.append("rect")
-    .attr("id", "toolbar")
-    .attr("class", "toolbar")
-    .attr("width", toolbarWidth)
-    .attr("height", toolbarHeight)
-    .attr("x", toolbarX)
-    .attr("y", toolbarY);
+// var toolbar = svg.append("rect")
+//     .attr("id", "toolbar")
+//     .attr("class", "toolbar")
+//     .attr("width", toolbarWidth)
+//     .attr("height", toolbarHeight)
+//     .attr("x", toolbarX)
+//     .attr("y", toolbarY);
 
-addLabel(svg, 400, 20, "bold h2 white", "Sequence Diagram Editor");
+//addLabel(svg, 400, 20, "bold h2 white", "Sequence Diagram Editor");
 
 // Create toolbox --- //
 var toolbox = svg.append("rect")
@@ -143,16 +143,17 @@ createElement("frame", "Frame", "toolbox-frame", "frame",
     drawRect, toolboxFrameData, frameData, toolboxFrameX,
     toolboxFrameY, toolboxFrameWidth,
     toolboxFrameHeight, frameWidth, frameHeight);
-    
+
 drawArrowLine("toolbox-arrow-line", 120, 220, 175, 220);
 addLabel(svg, 120, 270, "normal", "Arrow Line")
     .on("click", function () {
-    if(toolboxArrowActivated) {
-       deactivateArrowLines();
-    } else {
-       activateArrowLines();
-    }
-});
+        // Activate/de-activate toolbox arrow line    
+        if (toolboxArrowActivated) {
+            deactivateArrowLines();
+        } else {
+            activateArrowLines();
+        }
+    });
 
 function createElement(elementName, elementLabel, toolboxClass, elementClass,
     drawElementMethod, toolboxDataArray, dataArray, toolboxElementX, toolboxElementY,
@@ -178,7 +179,7 @@ function createElement(elementName, elementLabel, toolboxClass, elementClass,
         })
         .on("drag", function (d) {
             //trace("Dragging element: " + dToString(d));
-            if(toolboxArrowActivated) {
+            if (toolboxArrowActivated) {
                 return;
             }
             moveElement(d3.select(this), dataArray, d);
@@ -201,7 +202,7 @@ function createElement(elementName, elementLabel, toolboxClass, elementClass,
             };
         })
         .on("drag", function (d) {
-            if(toolboxArrowActivated) {
+            if (toolboxArrowActivated) {
                 return;
             }
             trace("Dragging element: " + dToString(d));
@@ -289,14 +290,14 @@ var line;
 var arrowLineCount = 1;
 function mousedown() {
     console.log("mousedown trigerred");
-    
+
     var m = d3.mouse(this);
     var x = Math.max(drawingCanvasX + 5, m[0]);
     var y = Math.max(drawingCanvasY + 5, m[1]);
-   
+
     id = "arrow-line-" + arrowLineCount;
     arrowLineCount += 1;
-    
+
     drawArrowLine(id, x, y, x, y);
     svg.on("mousemove", mousemove);
 }
@@ -304,32 +305,32 @@ function mousedown() {
 function mousemove() {
     var x1 = line.attr("x1");
     var y1 = line.attr("y1");
-    
+
     var m = d3.mouse(this);
     var x2 = Math.max(drawingCanvasX + 5, m[0]);
     var y2 = Math.max(drawingCanvasY + 5, m[1]);
-    
+
     line.attr("x2", x2)
         .attr("y2", y2);
     trace("drawing arrow line: [x1] " + x1 + " [y1] " + y1 + " [x2] " + x2 + " [y2] " + y2);
 }
 
 function mouseup() {
-    console.log("mouseup trigerred");    
+    console.log("mouseup trigerred");
     svg.on("mousemove", null);
     deactivateArrowLines();
-    
+
     var x1 = parseInt(line.attr("x1"));
     var y = parseInt(line.attr("y1"));
     var x2 = parseInt(line.attr("x2"));
-    
+
     // Make the line horizontal
     line.attr("y2", y);
-  
+
     var id = line.attr("id");
-    var labelX = (x2 > x1) ? (x1 + ((x2 - x1) * 1.5/4)) : (x2 + ((x1 - x2) * 1.5/4)); 
+    var labelX = (x2 > x1) ? (x1 + ((x2 - x1) * 1.5 / 4)) : (x2 + ((x1 - x2) * 1.5 / 4));
     var labelY = y - 10;
-    
+
     addLabel(svg, labelX, labelY, "normal", id + "()");
     trace("arrow line drawn from (" + x1 + "," + y + ") to (" + x2 + "," + y + ")")
 }
@@ -454,6 +455,37 @@ function addLabel(parent, x, y, class_, text) {
         .attr("y", y)
         .text(text);
 }
+
+function dragResize() {
+    var dragx = Math.max(dx + (16 / 2), Math.min(w, dx + width + d3.event.dx));
+    var dragy = Math.max(dy + (16 / 2), Math.min(h, dy + height + d3.event.dy));
+
+    trace("d3.event.x:" + d3.event.dx + " d3.event.y:" + d3.event.dy);
+
+    var dragTarget = d3.select(this);
+    var dragObject = d3.select(this.parentNode);
+
+    var o = dragObject.select("rect.box");
+    var o1 = dragObject.select("rect.titleBox");
+
+    var oldx = dx;
+    var oldy = dy;
+
+    dx = Math.max(0, Math.min(dx + width - (16 / 2), d3.event.x));
+    dy = Math.max(0, Math.min(dy + height - (16), d3.event.y));
+    w = w - (oldx - dx);
+    h = h - (oldy - dy);
+
+
+    dragTarget
+        .attr("x", function (d) { return dragx - (16 / 2) })
+        .attr("y", function (d) { return dragy - (16) })
+
+    o.attr("width", w)
+        .attr("height", h);
+
+    o1.attr("width", w);
+};
 
 // Add a text field to an element
 // function addTextField(parent, x, y, class_, text) {
